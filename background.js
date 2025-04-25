@@ -97,12 +97,44 @@ chrome.action.onClicked.addListener(() => {
   jumpToNoisyTab();
 });
 
+// Function to mute all tabs except the current one
+async function muteAllExceptCurrent() {
+  // Get the current active tab
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  
+  if (!activeTab) return false;
+  
+  // Get all tabs across all windows
+  const allWindows = await chrome.windows.getAll({ populate: true });
+  let allTabs = [];
+  
+  for (const window of allWindows) {
+    if (window.tabs) {
+      allTabs = allTabs.concat(window.tabs);
+    }
+  }
+  
+  // Mute all tabs except the active one
+  for (const tab of allTabs) {
+    if (tab.id !== activeTab.id) {
+      await chrome.tabs.update(tab.id, { muted: true });
+    } else {
+      // Make sure current tab is not muted
+      await chrome.tabs.update(tab.id, { muted: false });
+    }
+  }
+  
+  return true;
+}
+
 // Listen for keyboard shortcuts
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'jump-to-noisy-tab') {
     jumpToNoisyTab();
   } else if (command === 'jump-back-to-last-tab') {
     jumpBackToLastNonAudioTab();
+  } else if (command === 'mute-all-except-current') {
+    muteAllExceptCurrent();
   }
 });
 

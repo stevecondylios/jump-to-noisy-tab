@@ -28,6 +28,13 @@
         "mac": "Alt+Shift+B"
       },
       "description": "Jump back to the previous non-audio tab"
+    },
+    "mute-all-except-current": {
+      "suggested_key": {
+        "default": "Alt+Shift+M",
+        "mac": "Alt+Shift+M"
+      },
+      "description": "Mute all tabs except the current tab"
     }
   },
   "icons": {
