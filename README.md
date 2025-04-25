@@ -1,3 +1,4 @@
+
 # Jump to Noisy Tab
 
 A Chrome extension that allows you to quickly jump to tabs that have active audio playing.
@@ -6,6 +7,7 @@ A Chrome extension that allows you to quickly jump to tabs that have active audi
 
 - Jump to tabs with active audio by clicking the extension icon
 - Use keyboard shortcut Alt+Shift+J (Option+Shift+J on macOS) to jump to noisy tabs
+- Pressing the shortcut repeatedly cycles through all tabs with active audio
 - Works across all Chrome windows
 - Minimal permissions required
 
@@ -16,18 +18,10 @@ A Chrome extension that allows you to quickly jump to tabs that have active audi
 3. Enable "Developer mode" (toggle in the top-right corner)
 4. Click "Load unpacked" and select the extension directory
 
-## Icon Creation
-
-Before publishing to the Chrome Web Store, you'll need to create icons in the following sizes:
-- 16x16 pixels
-- 48x48 pixels 
-- 128x128 pixels
-
-Save these icons in the `icons` directory with the filenames:
-- `icon16.png`
-- `icon48.png`
-- `icon128.png`
-
 ## Permissions
 
 This extension only requires the `tabs` permission to access tab information and detect which tabs are playing audio.
+
+## Note
+
+Made with claude code (2 prompts, $0.26c, 10 minutes). Logo made with ChatGPT 4o (2 prompts).
