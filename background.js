@@ -97,7 +97,11 @@ chrome.action.onClicked.addListener(() => {
   jumpToNoisyTab();
 });
 
-// Function to mute all tabs except the current one
+// Store the previous mute states of tabs
+let previousMuteStates = [];
+let allMuted = false;
+
+// Function to toggle mute all tabs except the current one
 async function muteAllExceptCurrent() {
   // Get the current active tab
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -114,14 +118,35 @@ async function muteAllExceptCurrent() {
     }
   }
   
-  // Mute all tabs except the active one
-  for (const tab of allTabs) {
-    if (tab.id !== activeTab.id) {
-      await chrome.tabs.update(tab.id, { muted: true });
-    } else {
-      // Make sure current tab is not muted
-      await chrome.tabs.update(tab.id, { muted: false });
+  // If tabs are already muted by our function, restore previous states
+  if (allMuted) {
+    for (const state of previousMuteStates) {
+      try {
+        await chrome.tabs.update(state.id, { muted: state.muted });
+      } catch (error) {
+        // Tab might no longer exist
+        console.error("Error restoring tab state:", error);
+      }
     }
+    allMuted = false;
+    previousMuteStates = [];
+  } else {
+    // Save current mute states before modifying
+    previousMuteStates = allTabs.map(tab => ({ 
+      id: tab.id, 
+      muted: tab.mutedInfo ? tab.mutedInfo.muted : false 
+    }));
+    
+    // Mute all tabs except the active one
+    for (const tab of allTabs) {
+      if (tab.id !== activeTab.id) {
+        await chrome.tabs.update(tab.id, { muted: true });
+      } else {
+        // Make sure current tab is not muted
+        await chrome.tabs.update(tab.id, { muted: false });
+      }
+    }
+    allMuted = true;
   }
   
   return true;
