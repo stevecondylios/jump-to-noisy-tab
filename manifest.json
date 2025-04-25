@@ -21,6 +21,13 @@
         "mac": "Alt+Shift+J"
       },
       "description": "Jump to a tab with active audio"
+    },
+    "jump-back-to-last-tab": {
+      "suggested_key": {
+        "default": "Alt+Shift+B",
+        "mac": "Alt+Shift+B"
+      },
+      "description": "Jump back to the previous non-audio tab"
     }
   },
   "icons": {

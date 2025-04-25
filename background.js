@@ -1,12 +1,24 @@
 // Keep track of the current noisy tab index
 let currentNoisyTabIndex = -1;
 let lastNoisyTabs = [];
+// Track the last active tab without audio
+let lastNonAudioTabId = null;
+let lastNonAudioWindowId = null;
 
 // Function to find and jump to a tab with audio playing
 async function jumpToNoisyTab() {
   // Get all Chrome windows
   const windows = await chrome.windows.getAll({ populate: true });
   let noisyTabs = [];
+  
+  // Get the current active tab to potentially update last non-audio tab
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  
+  // Update lastNonAudioTabId if current tab has no audio
+  if (activeTab && !activeTab.audible) {
+    lastNonAudioTabId = activeTab.id;
+    lastNonAudioWindowId = activeTab.windowId;
+  }
   
   // Collect all tabs with audio across all windows
   for (const window of windows) {
@@ -50,6 +62,27 @@ async function jumpToNoisyTab() {
   return false;
 }
 
+// Function to jump back to the last non-audio tab
+async function jumpBackToLastNonAudioTab() {
+  if (lastNonAudioTabId && lastNonAudioWindowId) {
+    try {
+      // Check if the tab still exists
+      const tab = await chrome.tabs.get(lastNonAudioTabId);
+      if (tab) {
+        // Focus the window and tab
+        await chrome.windows.update(lastNonAudioWindowId, { focused: true });
+        await chrome.tabs.update(lastNonAudioTabId, { active: true });
+        return true;
+      }
+    } catch (error) {
+      // Tab doesn't exist anymore, reset the stored IDs
+      lastNonAudioTabId = null;
+      lastNonAudioWindowId = null;
+    }
+  }
+  return false;
+}
+
 // Helper function to compare arrays for equality
 function arraysEqual(a, b) {
   if (a.length !== b.length) return false;
@@ -64,10 +97,25 @@ chrome.action.onClicked.addListener(() => {
   jumpToNoisyTab();
 });
 
-// Listen for keyboard shortcut
+// Listen for keyboard shortcuts
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'jump-to-noisy-tab') {
     jumpToNoisyTab();
+  } else if (command === 'jump-back-to-last-tab') {
+    jumpBackToLastNonAudioTab();
+  }
+});
+
+// Track active tab changes to update lastNonAudioTabId
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  try {
+    const tab = await chrome.tabs.get(activeInfo.tabId);
+    if (!tab.audible) {
+      lastNonAudioTabId = tab.id;
+      lastNonAudioWindowId = tab.windowId;
+    }
+  } catch (error) {
+    console.error("Error getting tab info:", error);
   }
 });
 
